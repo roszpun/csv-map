@@ -33,6 +33,7 @@ describe('Test upload and markers', () => {
   it('renders all markers', () => {
     cy.visit('/');
     assignData(cy);
+    cy.wait(1000);
     cy.get('button').click();
     cy.wait(1000);
     cy.get('.found-markers strong').should('contain', '12');

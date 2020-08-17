@@ -21,18 +21,21 @@
       @select-filter="setFilter"
     ></markers-list>
     <div class="map-wrapper">
-    <googlemaps-map
-      v-if="hasMarkers"
-      :center="filteredMarkers[0].position"
-      :zoom="5">
-      <template v-if="hasMarkers">
-          <googlemaps-marker
-            v-for="(marker, index) of filteredMarkers"
-            :key="index"
-            :icon="marker.icon"
-            :position="marker.position"
-          />
-        </template>
+      <div class="found-markers">
+        We found: <strong>{{markersData.length}}</strong>
+      </div>
+      <googlemaps-map
+        v-if="hasMarkers"
+        :center="filteredMarkers[0].position"
+        :zoom="5">
+        <template v-if="hasMarkers">
+            <googlemaps-marker
+              v-for="(marker, index) of filteredMarkers"
+              :key="index"
+              :icon="marker.icon"
+              :position="marker.position"
+            />
+          </template>
       </googlemaps-map>
     </div>
   </div>
