@@ -1,6 +1,7 @@
 <template>
   <div class="list-wrapper">
     <div class="categories">
+      <div>Filter categories:</div>
       <button
         :class="{'is-active': isFilterActive(filter.name)}"
         @click="$emit('select-filter', category.name)"
@@ -11,7 +12,7 @@
       <button
         :class="{'is-active': isFilterActive(false)}"
         @click="$emit('select-filter', false)">
-         Wszystkie
+         All categories
         </button>
     </div>
     <ul>
@@ -42,6 +43,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .list-wrapper{
+  padding-top: 10px;;
   width: 250px;
   height: 100vh;
   position: fixed;
@@ -72,5 +74,14 @@ li {
     border-radius: 50%;
     margin-right: 5px;
   }
+}
+button{
+  border: 0;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  color: #fff;
+  border-radius: 3px;
+  background: gray;
 }
 </style>

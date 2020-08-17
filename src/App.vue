@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <div class="reset" @click="resetAll">Start over</div>
     <file-mapper
       :markers-data="markersData"
       :columns="columns"
@@ -10,6 +11,7 @@
       :rows="rows"
       :saved-mapping="savedMapping"
       @save="saveCategories"
+      v-show="!hasMarkers"
     >
     </file-mapper>
     <markers-list
@@ -18,30 +20,26 @@
       :categories="categoriesColors"
       @select-filter="setFilter"
     ></markers-list>
+    <div class="map-wrapper">
     <googlemaps-map
       v-if="hasMarkers"
       :center="filteredMarkers[0].position"
       :zoom="5">
       <template v-if="hasMarkers">
-        <googlemaps-marker
-          v-for="(marker, index) of filteredMarkers"
-          :key="index"
-          :icon="marker.icon"
-          :position="marker.position"
-        />
-      </template>
-    </googlemaps-map>
-    <div class="found-markers" v-if="hasMarkers">
-      Znalezionych lokalizacji
-      <strong>
-      {{this.markersData.length}}
-      </strong>
+          <googlemaps-marker
+            v-for="(marker, index) of filteredMarkers"
+            :key="index"
+            :icon="marker.icon"
+            :position="marker.position"
+          />
+        </template>
+      </googlemaps-map>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import MarkersList from './components/MarkersList.vue';
 import FileMapper from './components/FileMapper.vue';
 
@@ -53,7 +51,6 @@ export default {
   },
   data() {
     return {
-      step: 0,
       categoriesColors: [],
       filter: false,
     };
@@ -84,6 +81,7 @@ export default {
     setFilter(filter) {
       this.filter = filter;
     },
+    ...mapActions(['resetAll']),
   },
 };
 </script>
@@ -93,15 +91,15 @@ body, html{
   padding: 0;
   margin: 0;
 }
+.map-wrapper{
+  margin-left: 250px;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
-.main-app{
-  margin-left: 250px;
 }
 ul{
   li{
@@ -110,6 +108,20 @@ ul{
 }
 
 .vue-google-map{
-  height: 500px;
+  height: 100vh;
+}
+.reset{
+  z-index: 2;
+  padding: 15px;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: #fff;
+  box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+  &:hover{
+    background: orange;
+  }
 }
 </style>

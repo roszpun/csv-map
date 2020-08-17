@@ -1,27 +1,50 @@
 <template>
-  <div>
-    <strong v-if="isLoading">Ładowanie</strong>
-        <div class="main-app">
-          <h2>Hey Fella, upload your CSV file with city, state, zip, address and category
-            <br/> I'll show them on the  map for you :)</h2>
-          <input type="file" @change="filesChange($event.target.files)"
-                  accept=".csv" class="input-file">
-          <ul>
-            <li v-for="(column, index) in columns" :key="index">
+  <div class="file-mapper">
+    <strong v-if="isLoading">Wait please, we are working to decode your addresses...</strong>
+    <div class="main-app">
+      <template v-if="columnsEmpty">
+        <h2>
+          Find addresses location base on the csv file.
+        </h2>
+        <h5>Upload your csv file first.</h5>
+        <div class="input-wrapper">
+          <input
+            type="file"
+            @change="filesChange($event.target.files)"
+            accept=".csv"
+            class="input-file"
+            ref="input"
+          />
+        </div>
+      </template>
+      <div class="columns-mapper" v-if="columns.length > 0">
+        <h2>Great, now map the columns to the data type.</h2>
+        <ul>
+          <li v-for="(column, index) in columns" :key="index">
+            <div class="column-name">
               {{column}}
-              <select :value="columnsMapping[index].type"
-              @input="updateColumnMapping({value: $event.target.value, index})">
-                <option v-for="(type, typeIndex) in selectableTypes[index]"
+            </div>
+            <select
+              :value="columnsMapping[index].type"
+              @input="updateColumnMapping({value: $event.target.value, index})"
+            >
+              <option
+                v-for="(type, typeIndex) in selectableTypes[index]"
                 :key="typeIndex"
-                :value="type">
-                  <span>{{type}}</span>
-                </option>
-                <option value=""></option>
-              </select>
-            </li>
-          </ul>
-          <button v-if="allMappingsHaveType"
-          @click="saveMappingAndDisplayMarkers">Zapisz mapowanie</button>
+                :value="type"
+              >
+                <span>{{type}}</span>
+              </option>
+              <option value>Select</option>
+            </select>
+          </li>
+        </ul>
+        <button
+          :disabled="!allMappingsHaveType"
+          @click="saveMappingAndDisplayMarkers">
+          Save column's data types
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -54,7 +77,12 @@ export default {
       return this.rows.filter((row) => row.length === 5);
     },
     uniqueCategories() {
-      return Array.from(new Set(this.validRows.map((row) => row[this.columnsIndexes.category])));
+      return Array.from(
+        new Set(this.validRows.map((row) => row[this.columnsIndexes.category])),
+      );
+    },
+    columnsEmpty() {
+      return this.columns.length === 0;
     },
     categoriesColors() {
       return this.uniqueCategories.map((category) => ({
@@ -63,13 +91,14 @@ export default {
       }));
     },
     selectableTypes() {
-      return this.columns.map((column, index) => this.columnsTypes.filter(
-        (type) => !this.isTypeSelected(type, index),
-      ));
+      return this.columns.map((column, index) => this.columnsTypes
+        .filter((type) => !this.isTypeSelected(type, index)));
     },
     allMappingsHaveType() {
-      return !this.columnsMapping.some((column) => column.type === null)
-      && this.columnsMapping.length > 0;
+      return (
+        !this.columnsMapping.some((column) => column.type === null)
+        && this.columnsMapping.length > 0
+      );
     },
   },
   methods: {
@@ -80,6 +109,7 @@ export default {
       updateColumnMapping: 'updateColumnMapping',
       saveMarker: 'saveMarker',
       changeLoadingStatus: 'changeLoadingStatus',
+      resetAll: 'resetAll',
     }),
     createIcon(color) {
       return {
@@ -91,7 +121,8 @@ export default {
       };
     },
     getCategoryColor(name) {
-      return this.categoriesColors.find((category) => category.name === name).color;
+      return this.categoriesColors.find((category) => category.name === name)
+        .color;
     },
     filesChange(files) {
       this.parseCsv(files[0]);
@@ -103,14 +134,21 @@ export default {
       this.$parser.parse(file, {
         complete: (parsedData) => {
           const { data } = parsedData;
+          if (data.length >= 20) {
+            this.resetAll();
+            this.$refs.input.value = '';
+            alert('Sorry, the data set is too big. Max allowe size is 20 rows.');
+            return;
+          }
           this.addColumns(data.shift());
           this.addRows(data);
         },
       });
     },
     isTypeSelected(type, index) {
-      return this.columnsMapping.some((column, columnIndex) => column.type === type
-      && columnIndex !== index);
+      return this.columnsMapping.some(
+        (column, columnIndex) => column.type === type && columnIndex !== index,
+      );
     },
     createMarkers() {
       this.changeLoadingStatus(true);
@@ -121,8 +159,13 @@ export default {
       });
     },
     saveMappingAndDisplayMarkers() {
-      this.saveMapping(this.columnsMapping);
-      this.createMarkers();
+      try {
+        this.saveMapping(this.columnsMapping);
+        this.createMarkers();
+      } catch {
+        // eslint-disable-next-line no-alert
+        alert('Something went wrong... Are you sure you assigned to columns properly and the data is valid?');
+      }
     },
     findColumn(type) {
       return this.savedMapping.findIndex((column) => column.type === type);
@@ -170,7 +213,48 @@ export default {
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-
+ul{
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  li{
+    select{
+      width: 100%;
+    }
+  }
+}
+.column-name{
+  background: orange;
+  padding: 10px;
+  font-weight: bold;
+  color: #fff;
+}
+.input-wrapper{
+  background: orange;
+  padding: 15px;
+  color: #fff;
+  border-radius: 15px;
+}
+.file-mapper {
+  display: flex;
+  flex-flow: column wrap;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+button{
+  border-radius: 9px;
+  background: orange;
+  padding: 10px 15px;
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  &[disabled]{
+    background: gray;
+    color: #000;
+    cursor: not-allowed;
+  }
+}
 </style>

@@ -3,16 +3,18 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
+const defaultState = () => ({
+  isLoading: false,
+  columns: [],
+  rows: [],
+  columnsMapping: [],
+  columnsTypes: ['city', 'state', 'zip', 'address', 'category'],
+  savedMapping: [],
+  markersData: [],
+});
+
 export default new Vuex.Store({
-  state: {
-    isLoading: false,
-    columns: [],
-    rows: [],
-    columnsMapping: [],
-    columnsTypes: ['city', 'state', 'zip', 'address', 'category'],
-    savedMapping: [],
-    markersData: [],
-  },
+  state: defaultState(),
   mutations: {
     SET_COLUMNS(state, columns) {
       state.columns = columns;
@@ -41,6 +43,9 @@ export default new Vuex.Store({
     UPDATE_MAPPED_COLUMN(state, { value, index }) {
       state.columnsMapping[index].type = value;
     },
+    RESET_ALL(state) {
+      Object.assign(state, defaultState());
+    },
   },
   actions: {
     saveColumns(context, columns) {
@@ -61,6 +66,9 @@ export default new Vuex.Store({
     },
     changeLoadingStatus(context, isLoading) {
       context.commit('SET_LOADING', isLoading);
+    },
+    resetAll(context) {
+      context.commit('RESET_ALL');
     },
   },
 });
